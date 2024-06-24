@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Misc strange devices
+#
+
+config ZTE_RCHIP
+	tristate "zte driver for rchip control"
+	help
+	  rchip driver for beidou message.
+
+
+config ZTE_RCHIP_V2
+	tristate "zte driver version 2 for rchip control"
+	help
+	  rchip driver version 2 for beidou message.

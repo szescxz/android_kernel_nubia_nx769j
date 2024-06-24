@@ -1,0 +1,5 @@
+config NUBIA_SENSORS_SENS_EN
+	tristate "support sensor sensitivity adjust, such as acceleration, gyrocopter etc."
+	default n
+	help
+		support sensor sensitivity adjust, such as acceleration, gyrocopter etc. 

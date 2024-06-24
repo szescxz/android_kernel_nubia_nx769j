@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: GPL-2.0-only
+menuconfig ZTE_POWER_SUPPLY
+	tristate "ZTE Power supply class support"
+	depends on POWER_VENDOR_COMMON
+	help
+	  Say Y here to enable power supply class support. This allows
+	  power supply (batteries, AC, USB) monitoring by userspace
+	  via sysfs and uevent (if available) and/or APM kernel interface
+	  (if selected below).
+if ZTE_POWER_SUPPLY
+config ZTE_POWER_SUPPLY_DEBUG
+	bool "ZTE Power supply debug"
+ 	default n
+	help
+	  Say Y here to enable debugging messages for power supply class
+	  and drivers.
+config ZTE_POWER_SUPPLY_COMMON
+	bool "ZTE Power supply common"
+ 	default n
+	help
+	  Say Y here to enable power supply class.
+config ZTE_POWER_SUPPLY_HWMON
+	bool
+	prompt "ZTE Expose power supply sensors as hwmon device"
+	depends on HWMON=y || HWMON=POWER_SUPPLY
+	default y
+	help
+	  This options enables API that allows sensors found on a
+	  power supply device (current, voltage, temperature) to be
+	  exposed as a hwmon device.
+	  Say Y here if you want power supplies to
+	  have hwmon sysfs interface too.
+endif # ZTE_POWER_SUPPLY

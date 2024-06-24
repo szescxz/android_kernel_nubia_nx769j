@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
-/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015, 2021 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/delay.h>
@@ -19,6 +20,9 @@
 
 #include "cqhci.h"
 #include "cqhci-crypto.h"
+#if IS_ENABLED(CONFIG_MMC_CRYPTO_QTI)
+#include "cqhci-crypto-qti.h"
+#endif
 
 #define DCMD_SLOT 31
 #define NUM_SLOTS 32
@@ -108,6 +112,10 @@ static void cqhci_set_irqs(struct cqhci_host *cq_host, u32 set)
 static void cqhci_dumpregs(struct cqhci_host *cq_host)
 {
 	struct mmc_host *mmc = cq_host->mmc;
+	int offset = 0;
+
+	if (cq_host->offset_changed)
+		offset = CQE_V5_VENDOR_CFG;
 
 	CQHCI_DUMP("============ CQHCI REGISTER DUMP ===========\n");
 
@@ -144,6 +152,8 @@ static void cqhci_dumpregs(struct cqhci_host *cq_host)
 	CQHCI_DUMP("Resp idx:  0x%08x | Resp arg: 0x%08x\n",
 		   cqhci_readl(cq_host, CQHCI_CRI),
 		   cqhci_readl(cq_host, CQHCI_CRA));
+	CQHCI_DUMP("Vendor cfg 0x%08x\n",
+		   cqhci_readl(cq_host, CQHCI_VENDOR_CFG + offset));
 
 	if (cq_host->ops->dumpregs)
 		cq_host->ops->dumpregs(mmc);
@@ -351,6 +361,9 @@ static int cqhci_enable(struct mmc_host *mmc, struct mmc_card *card)
 
 	__cqhci_enable(cq_host);
 
+	if (cq_host->ops->enhanced_strobe_mask)
+		cq_host->ops->enhanced_strobe_mask(mmc, true);
+
 	cq_host->enabled = true;
 
 #ifdef DEBUG
@@ -404,6 +417,9 @@ static void cqhci_disable(struct mmc_host *mmc)
 	cqhci_off(mmc);
 
 	__cqhci_disable(cq_host);
+
+	if (cq_host->ops->enhanced_strobe_mask)
+		cq_host->ops->enhanced_strobe_mask(mmc, false);
 
 	dmam_free_coherent(mmc_dev(mmc), cq_host->data_size,
 			   cq_host->trans_desc_base,
@@ -781,6 +797,10 @@ static void cqhci_finish_mrq(struct mmc_host *mmc, unsigned int tag)
 	struct cqhci_slot *slot = &cq_host->slot[tag];
 	struct mmc_request *mrq = slot->mrq;
 	struct mmc_data *data;
+	int offset = 0;
+
+	if (cq_host->offset_changed)
+		offset = CQE_V5_VENDOR_CFG;
 
 	if (!mrq) {
 		WARN_ONCE(1, "%s: cqhci: spurious TCN for tag %d\n",
@@ -804,6 +824,11 @@ static void cqhci_finish_mrq(struct mmc_host *mmc, unsigned int tag)
 			data->bytes_xfered = 0;
 		else
 			data->bytes_xfered = data->blksz * data->blocks;
+	} else {
+		cqhci_writel(cq_host, cqhci_readl(cq_host,
+			CQHCI_VENDOR_CFG + offset) |
+			CMDQ_SEND_STATUS_TRIGGER,
+			CQHCI_VENDOR_CFG + offset);
 	}
 
 	mmc_cqe_request_done(mmc, mrq);
@@ -817,7 +842,6 @@ irqreturn_t cqhci_irq(struct mmc_host *mmc, u32 intmask, int cmd_error,
 	struct cqhci_host *cq_host = mmc->cqe_private;
 
 	status = cqhci_readl(cq_host, CQHCI_IS);
-	cqhci_writel(cq_host, status, CQHCI_IS);
 
 	pr_debug("%s: cqhci: IRQ status: 0x%08x\n", mmc_hostname(mmc), status);
 
@@ -829,7 +853,14 @@ irqreturn_t cqhci_irq(struct mmc_host *mmc, u32 intmask, int cmd_error,
 			mmc_debugfs_err_stats_inc(mmc, MMC_ERR_CMDQ_GCE);
 		if (status & CQHCI_IS_ICCE)
 			mmc_debugfs_err_stats_inc(mmc, MMC_ERR_CMDQ_ICCE);
+		pr_err("%s: cqhci: error IRQ status: 0x%08x cmd error %d data error %d\n",
+				mmc_hostname(mmc), status, cmd_error, data_error);
+		cqhci_dumpregs(cq_host);
+		cqhci_writel(cq_host, status, CQHCI_IS);
 		cqhci_error_irq(mmc, status, cmd_error, data_error);
+	} else {
+		 /* Clear interrupt */
+		cqhci_writel(cq_host, status, CQHCI_IS);
 	}
 
 	if (status & CQHCI_IS_TCC) {
@@ -1153,6 +1184,11 @@ struct cqhci_host *cqhci_pltfm_init(struct platform_device *pdev)
 		dev_err(&pdev->dev, "failed to remap cqhci regs\n");
 		return ERR_PTR(-EBUSY);
 	}
+
+#if IS_ENABLED(CONFIG_MMC_CRYPTO_QTI)
+	cq_host->pdev = pdev;
+#endif
+
 	dev_dbg(&pdev->dev, "CMDQ ioremap: done\n");
 
 	return cq_host;
@@ -1196,7 +1232,11 @@ int cqhci_init(struct cqhci_host *cq_host, struct mmc_host *mmc,
 		goto out_err;
 	}
 
+#if IS_ENABLED(CONFIG_MMC_CRYPTO_QTI)
+	err = cqhci_qti_crypto_init(cq_host);
+#else
 	err = cqhci_crypto_init(cq_host);
+#endif
 	if (err) {
 		pr_err("%s: CQHCI crypto initialization failed\n",
 		       mmc_hostname(mmc));

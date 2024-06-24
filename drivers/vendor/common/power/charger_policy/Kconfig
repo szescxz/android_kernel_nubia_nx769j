@@ -1,0 +1,20 @@
+config VENDOR_BATTERY_CAPACITY_LEARNING
+	tristate "Battery Capacity Learning driver"
+	depends on POWER_VENDOR_COMMON
+	default n
+	help
+	  Say Y here to enable the "Battery Capacity Learning" driver
+
+config VENDOR_CHARGE_ARBITRATE_SERVICE
+	tristate "Charge Arbitrate Service Driver"
+	depends on POWER_VENDOR_COMMON
+	default n
+	help
+	  Say Y here to enable the "Charge Arbitrate Service" driver
+
+config VENDOR_CHARGER_POLICY_SERVICE
+	tristate "Charger Policy Service Driver"
+	depends on POWER_VENDOR_COMMON && VENDOR_ZTE_MISC
+	default n
+	help
+	  Say Y here to enable the "Charger Policy Service" driver

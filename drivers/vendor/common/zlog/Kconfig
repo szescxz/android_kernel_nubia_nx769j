@@ -1,0 +1,11 @@
+config VENDOR_ZTE_DEV_MONITOR_SYSTEM
+	bool "ZTE DEVICE MONITOR SYSTEM"
+	default n
+	help
+	  Say Y here, if supported zte log device monitor system
+
+source "drivers/vendor/common/zlog/zlog_exception/Kconfig"
+source "drivers/vendor/common/zlog/zlog_common/Kconfig"
+source "drivers/vendor/common/zlog/zlog_test/Kconfig"
+
+

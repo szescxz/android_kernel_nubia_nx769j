@@ -10,6 +10,7 @@ menuconfig INPUT_TOUCHSCREEN
 
 	  If unsure, say Y.
 
+source "drivers/input/touchscreen/goodix_berlin_driver_9916r/Kconfig"
 if INPUT_TOUCHSCREEN
 
 config TOUCHSCREEN_88PM860X
@@ -23,6 +24,13 @@ config TOUCHSCREEN_88PM860X
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called 88pm860x-ts.
+
+config TOUCHSCREEN_IOVDD_GPIO_POWER
+	bool "tp iovdd power on use gpio"
+	default n
+	help
+	  Say Y here if you want to use iovdd gpio power on
+	  If unsure, say N.
 
 config TOUCHSCREEN_ADS7846
 	tristate "ADS7846/TSC2046/AD7873 and AD(S)7843 based touchscreens"

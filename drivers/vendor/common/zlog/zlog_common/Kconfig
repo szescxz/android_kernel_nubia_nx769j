@@ -1,0 +1,9 @@
+
+config VENDOR_ZTE_LOG_COMMON
+	tristate "ZTE LOG COMMON"
+	depends on VENDOR_ZTE_LOG_EXCEPTION
+	default n
+	help
+	  Say Y here, if supported zte log common
+
+

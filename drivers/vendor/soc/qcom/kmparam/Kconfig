@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config VENDOR_KERNEL_MODULE_PARAM
+	tristate "parse kernel module param and export to other vendor module"
+	depends on ARCH_QCOM
+	help
+	  parse kernel module param and export to other vendor module
+

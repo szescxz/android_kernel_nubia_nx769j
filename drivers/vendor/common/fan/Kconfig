@@ -1,0 +1,12 @@
+#
+# Fan driver configuration
+#
+config SOC_FAN
+        tristate "Soc Fan"
+        default n
+       help
+          Say Y here if you use soc control fan.
+
+#config FAN_UPDATA
+#	bool "Fan updata"
+#	default n

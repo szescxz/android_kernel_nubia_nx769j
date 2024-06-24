@@ -71,3 +71,6 @@ source "drivers/nfc/nxp-nci/Kconfig"
 source "drivers/nfc/s3fwrn5/Kconfig"
 source "drivers/nfc/st95hf/Kconfig"
 endmenu
+
+#Add by zte for nfc chip st54j.
+source "drivers/nfc/st54j/Kconfig"

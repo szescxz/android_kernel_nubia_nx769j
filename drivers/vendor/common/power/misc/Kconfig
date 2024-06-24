@@ -1,0 +1,5 @@
+config VENDOR_ZTE_MISC
+	tristate "zte misc driver"
+	depends on POWER_VENDOR_COMMON
+	help
+	  Say Y here, if supported zte misc

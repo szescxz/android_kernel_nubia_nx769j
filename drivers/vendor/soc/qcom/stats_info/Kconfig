@@ -1,0 +1,6 @@
+
+config VENDOR_STATS_INFO
+	tristate "ZTE STATS INFO"
+	default n
+	help
+	  Say 'y' here to include support for zte imem info.

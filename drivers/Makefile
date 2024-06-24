@@ -189,3 +189,6 @@ obj-$(CONFIG_COUNTER)		+= counter/
 obj-$(CONFIG_MOST)		+= most/
 obj-$(CONFIG_PECI)		+= peci/
 obj-$(CONFIG_HTE)		+= hte/
+obj-y	+= vendor/common/
+obj-y   += vendor/soc/qcom/
+obj-$(CONFIG_NUBIA_SENSORS_SENS_EN)	+= nubia/sensors_sensitivity/

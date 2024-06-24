@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Misc strange devices
+#
+
+config ZCARD_HOLDER
+	tristate "zte card holder test Support"
+	help
+	  support zte card holder test.

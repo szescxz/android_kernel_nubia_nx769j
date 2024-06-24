@@ -1,0 +1,26 @@
+config NFC_ST54J
+	tristate "ST NCI based NFC Driver for ST54J"
+	depends on I2C && SPI
+	help
+	  This enables the NFC driver for ST54J based devices.
+	  This is for i2c connected with NFC controller and spi connected
+	  with eSE.NCI protocol logic resides in the usermode and it has
+	  no other NFC dependencies.
+
+config NFC_ST54J_ESE
+	tristate "ST NCI based NFC ESE Driver for ST54J"
+	depends on I2C && SPI
+	help
+	  This enables the NFC ESE driver for ST54J based devices.
+	  This is for i2c connected with NFC controller and spi connected
+	  with eSE.NCI protocol logic resides in the usermode and it has
+	  no other NFC dependencies.
+
+config NFC_GPIO35_CLKREQ
+	tristate "ST NCI based NFC ESE Driver for ST54L"
+	depends on I2C && SPI
+	help
+	  This enables the NFC ESE driver for ST54J based devices.
+	  This is for i2c connected with NFC controller and spi connected
+	  with eSE.NCI protocol logic resides in the usermode and it has
+	  no other NFC dependencies.

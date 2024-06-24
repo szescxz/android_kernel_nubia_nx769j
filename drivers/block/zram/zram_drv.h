@@ -28,6 +28,9 @@
 #define ZRAM_SECTOR_PER_LOGICAL_BLOCK	\
 	(1 << (ZRAM_LOGICAL_BLOCK_SHIFT - SECTOR_SHIFT))
 
+#ifndef CONFIG_ZRAM_WRITEBACK
+#define CONFIG_ZRAM_WRITEBACK
+#endif
 
 /*
  * ZRAM is mainly used for memory efficiency so we want to keep memory

@@ -18,6 +18,12 @@
 #include <linux/platform_device.h>
 #include <linux/reboot.h>
 #include <linux/regmap.h>
+#ifdef CONFIG_ZTE_BOOT_CODE
+#include <linux/qcom_scm.h>
+#include <linux/of_platform.h>
+#include <linux/of_gpio.h>
+#include <linux/gpio.h>
+#endif
 
 #define PON_REV2			0x01
 
@@ -52,6 +58,13 @@
 #define PON_DBC_CTL			0x71
 #define  PON_DBC_DELAY_MASK		0x7
 
+#ifdef CONFIG_VOL_DOWN_RESIN
+#define PON_PBS_RESIN_AND_KPDPWR_RESET_SW_CTL  0x4A
+#else
+#define PWRKEY_S2_RESET_PBS_OFFSET      0x42
+#endif
+#define PON_POWER_OFF_TYPE_WARM_RESET   0x1
+
 struct pm8941_data {
 	unsigned int	pull_up_bit;
 	unsigned int	status_bit;
@@ -79,7 +92,121 @@ struct pm8941_pwrkey {
 	ktime_t sw_debounce_end_time;
 	bool last_status;
 	const struct pm8941_data *data;
+#ifdef CONFIG_ZTE_BOOT_CODE
+	struct timer_list       timer;
+	struct work_struct      pwrkey_poweroff_work;
+	int                     vol_up_gpio;
+	int                     vol_dn_gpio;
+#endif
 };
+
+#ifdef CONFIG_ZTE_BOOT_CODE
+extern int socinfo_get_ftm_flag(void);
+extern int is_s2_warm_reset(void);
+
+static bool vendor_volume_keys_pressed(struct pm8941_pwrkey *pon)
+{
+	int vol_up, vol_dn;
+	struct device_node *gpio_key_node = NULL;
+	struct device_node *child_node = NULL;
+	bool ret = false;
+	static bool key_gpio_initialized = false;
+
+	if (!key_gpio_initialized) {
+		gpio_key_node = of_find_compatible_node(NULL, NULL, "gpio-keys");
+		if (gpio_key_node) {
+			for_each_available_child_of_node(gpio_key_node, child_node) {
+				if (!strcmp(child_node->name, "vol_up")) {
+					pon->vol_up_gpio = of_get_named_gpio(child_node, "gpios", 0);
+            #ifdef CONFIG_VOL_DOWN_RESIN
+				}
+            #else
+				} else if (!strcmp(child_node->name, "vol_down")) {
+					pon->vol_dn_gpio = of_get_named_gpio(child_node, "gpios", 0);
+				}
+            #endif
+			}
+		} else {
+			dev_err(pon->dev, "unable to find DT node: gpio-keys\n");
+		}
+		key_gpio_initialized = true;
+	}
+
+	if (gpio_is_valid(pon->vol_up_gpio) && gpio_is_valid(pon->vol_dn_gpio)) {
+		vol_up = !gpio_get_value(pon->vol_up_gpio);
+		vol_dn = !gpio_get_value(pon->vol_dn_gpio);
+		pr_debug("%s: vol_up(%d), vol_dn(%d)\n", __func__, vol_up, vol_dn);
+		ret = vol_up && vol_dn;
+	} else {
+		dev_err(pon->dev, "%s: invalid gpio\n", __func__);
+	}
+	return ret;
+}
+
+static void vendor_mod_ponreg(struct pm8941_pwrkey *pon)
+{
+	int rc;
+#ifdef CONFIG_VOL_DOWN_RESIN
+	dev_info(pon->dev, "%s: nubia modify kpdpwr-resin s2 warm reset\n", __func__);
+	if (pon->pon_pbs_baseaddr) {
+		dev_err(pon->dev, "use pon pbs address=0x%04X\n", pon->pon_pbs_baseaddr);
+		rc = regmap_write(pon->regmap, pon->pon_pbs_baseaddr + PON_PBS_RESIN_AND_KPDPWR_RESET_SW_CTL, PON_POWER_OFF_TYPE_WARM_RESET);
+		if (rc)
+			dev_err(pon->dev, "nubia kpdpwr-resin s2 register write failed, rc=%d\n", rc);
+	}
+#else
+	dev_info(pon->dev, "%s: modify pwrkey s2 warm reset\n", __func__);
+	if (pon->pon_pbs_baseaddr) {
+		dev_err(pon->dev, "use pon pbs address=0x%04X\n", pon->pon_pbs_baseaddr);
+		rc = regmap_write(pon->regmap, pon->pon_pbs_baseaddr + PWRKEY_S2_RESET_PBS_OFFSET, PON_POWER_OFF_TYPE_WARM_RESET);
+		if (rc)
+			dev_err(pon->dev, "pwrkey s2 register write failed, rc=%d\n", rc);
+	}
+#endif
+}
+
+static void pwrkey_poweroff(struct work_struct *work)
+{
+	struct pm8941_pwrkey *pon = container_of(work, struct pm8941_pwrkey, pwrkey_poweroff_work);
+	//if ((vendor_volume_keys_pressed(pon)) && usb_cable_connected(pon)) {
+	if (vendor_volume_keys_pressed(pon)) {
+		dev_err(pon->dev, "%s: power key long pressed, trigger s2 warm reset\n", __func__);
+		//qcom_scm_set_download_mode(QCOM_DOWNLOAD_FULLDUMP, 0);
+		vendor_mod_ponreg(pon);
+	} else {
+		if (!is_s2_warm_reset()) {
+			dev_err(pon->dev, "%s: power key long pressed, trigger kernel reboot\n", __func__);
+			kernel_restart("LONGPRESS");
+		}
+	}
+}
+
+static void pwrkey_timer(struct timer_list *t)
+{
+
+	struct pm8941_pwrkey *pon = from_timer(pon, t, timer);
+
+	schedule_work(&pon->pwrkey_poweroff_work);
+}
+
+void zte_set_timer(struct pm8941_pwrkey *pon)
+{
+	if (socinfo_get_ftm_flag()) {
+		pon->timer.expires = jiffies + 3 * HZ;
+		dev_info(pon->dev, "%s: FTM mode, reboot in 3 Secs\n", __func__);
+	} else {
+		#ifdef CONFIG_ZTE_PWRKEY_HARDRESET_TIMEOUT
+			pon->timer.expires = jiffies + CONFIG_ZTE_PWRKEY_HARDRESET_TIMEOUT * HZ;
+			dev_info(pon->dev, "%s: Normal mode, reboot in %d Secs\n", __func__,
+				CONFIG_ZTE_PWRKEY_HARDRESET_TIMEOUT);
+		#else
+			pon->timer.expires = jiffies + 10 * HZ;
+			dev_info(pon->dev, "%s: Normal mode, reboot in 10 Secs\n", __func__);
+		#endif
+	}
+	mod_timer(&pon->timer, pon->timer.expires);
+}
+#endif
 
 static int pm8941_reboot_notify(struct notifier_block *nb,
 				unsigned long code, void *unused)
@@ -181,6 +308,17 @@ static irqreturn_t pm8941_pwrkey_irq(int irq, void *_data)
 	input_report_key(pwrkey->input, pwrkey->code, sts);
 	input_sync(pwrkey->input);
 
+	if (!strcmp(pwrkey->input->name, "pmic_resin")) {
+		dev_err(pwrkey->dev, "skip zte set timer part 2\n");
+	} else {
+#ifdef CONFIG_ZTE_BOOT_CODE
+		if (sts)
+			zte_set_timer(pwrkey);
+		else
+			del_timer(&pwrkey->timer);
+#endif
+	}
+
 	return IRQ_HANDLED;
 }
 
@@ -266,6 +404,10 @@ static int pm8941_pwrkey_probe(struct platform_device *pdev)
 
 	pwrkey->dev = &pdev->dev;
 	pwrkey->data = of_device_get_match_data(&pdev->dev);
+	if (!pwrkey->data) {
+		dev_err(&pdev->dev, "match data not found\n");
+		return -ENODEV;
+	}
 
 	parent = pdev->dev.parent;
 	regmap_node = pdev->dev.of_node;
@@ -364,6 +506,19 @@ static int pm8941_pwrkey_probe(struct platform_device *pdev)
 			dev_err(&pdev->dev, "failed to set pull: %d\n", error);
 			return error;
 		}
+	}
+
+	if (!strcmp(pwrkey->input->name, "pmic_resin")) {
+		dev_err(&pdev->dev, "skip zte set timer part 1\n");
+	} else {
+#ifdef CONFIG_ZTE_BOOT_CODE
+	if (is_s2_warm_reset()) {
+		dev_err(&pdev->dev, "%s: s2 warm reset is enabled by vendorcfg, power key long press to memory dump\n", __func__);
+		vendor_mod_ponreg(pwrkey);
+	}
+	timer_setup(&pwrkey->timer, pwrkey_timer, 0);
+	INIT_WORK(&pwrkey->pwrkey_poweroff_work, pwrkey_poweroff);
+#endif
 	}
 
 	error = devm_request_threaded_irq(&pdev->dev, pwrkey->irq,

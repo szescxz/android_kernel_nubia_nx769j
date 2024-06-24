@@ -1,0 +1,475 @@
+#ifndef _ZLOG_COMMON_BASE_H
+#define _ZLOG_COMMON_BASE_H
+
+#include <linux/miscdevice.h>
+
+#define MAX_CLIENT_CNT			32
+
+/* max client name length */
+#define ZLOG_MAX_MSG_LEN			2048
+
+/* max client name length */
+#define ZLOG_MAX_LOG_LEN			256
+
+/* max client name length */
+#define ZLOG_LOG_CUSHION_LEN			256
+
+
+/* max client name length */
+#define ZLOG_CLIENT_NAME_LEN			32
+/* max device name length */
+#define ZLOG_MAX_DEVICE_NAME_LEN		32
+/* max module name length */
+#define ZLOG_MAX_MODULE_NAME_LEN	32
+/* max ic name length */
+#define ZLOG_MAX_IC_NAME_LEN			64
+
+#define ZLOG_TIME_STAMP_LEN				"[2022-06-30 18:28:38]"
+#define ZLOG_MODULE_NO_LEN				16
+#define ZLOG_ERROR_NO_LEN				16
+#define ZLOG_CONTENT_NO_LEN				16
+
+
+#define BUFF_STATUS_NOT_INIT	0
+#define BUFF_STATUS_READY		1
+#define BUFF_STATUS_APPEND		2
+#define BUFF_STATUS_NOTIFY		3
+#define BUFF_STATUS_ERROR		4
+
+#define ZLOG_COMB_MODULE_ID(x)		(x << 24)
+
+/* Error Flag use the Bit22 and Bit 23.  0 stands for Error, 1 stands for Warning */
+#define ZLOG_COMB_ERR_FLAG 			(0 << 22)
+#define ZLOG_COMB_WARN_FLAG 		(1 << 22)
+
+#define ZLOG_MODULE_CHG				(1)
+#define ZLOG_MODULE_TP				(2)
+#define ZLOG_MODULE_LCD				(3)
+#define ZLOG_MODULE_SENSOR			(4)
+#define ZLOG_MODULE_FG				(5)
+#define ZLOG_MODULE_SMARTPA			(6)
+#define ZLOG_MODULE_FP				(7)
+#define ZLOG_MODULE_SUBSYS			(8)
+#define ZLOG_MODULE_CAMERA			(9)
+#define ZLOG_MODULE_BOOT			(10)
+#define ZLOG_MODULE_AUDIO 			(11)
+#define ZLOG_MODULE_SDIO	 		(12)
+#define ZLOG_MODULE_WIFI	 		(13)
+#define ZLOG_MODULE_SND_CARD		(14)
+#define ZLOG_MODULE_HSTYPEC 		(15)
+#define ZLOG_MODULE_SPI			(16)
+#define ZLOG_MODULE_NFC				(17)
+#define ZLOG_MODULE_F2FS			(18)
+#define ZLOG_MODULE_UFS			(19)
+#define ZLOG_MODULE_OTA				(20)
+#define ZLOG_MODULE_DWC3			(21)
+#define ZLOG_MODULE_TYPEC			(22)
+#define ZLOG_MODULE_VIB				(23)
+#define ZLOG_MODULE_SC				(24)
+
+/* Charger */
+#define ZLOG_CHG_I2C_R_ERROR_NO		(1 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_I2C_W_ERROR_NO		(2 | ZLOG_COMB_ERR_FLAG)
+
+#define ZLOG_CHG_USBIN_FAULT		(255 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_VBAT_OVP			(256 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_CHG_IBAT_OCP			(257 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_VBUS_OVP			(258 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_IBUS_OCP			(259 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_CONV_OCP			(260 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_CONV_START			(261 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_CONV_STOP			(262 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_VBUS_TO_HIGH		(263 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_VBUS_TO_LOW		(264 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_WT_TIMEOUT			(265 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_DUMP_NO			(266 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_CHG_BOOTMODE_NO		(267 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_CHG_BOOTMODE_OVLO		(268 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_BOOTMODE_SMPL		(269 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_BOOTMODE_OCP		(270 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_HARD_RESET			(271 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_CHG_SOFT_RESET			(272 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_CHG_BOOTMODE_S2_TIMEOUT	(273 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CHG_BOOTMODE_S3_TIMEOUT	(274 | ZLOG_COMB_ERR_FLAG)
+
+/* TP */
+#define ZLOG_TP_I2C_R_ERROR_NO				(1 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_TP_I2C_W_ERROR_NO				(2 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_TP_CRC_ERROR_NO				(3 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_TP_FW_UPGRADE_ERROR_NO			(4 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_TP_ESD_CHECK_ERROR_NO			(5 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_TP_SPI_R_ERROR_NO				(6 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_TP_SPI_W_ERROR_NO				(7 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_TP_PROBE_ERROR_NO				(8 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_TP_SUSPEND_GESTURE_OPEN_NO			(9 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_TP_REQUEST_FIRMWARE_ERROR_NO		(10 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_TP_I2C_R_WARN_NO				(11 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_TP_I2C_W_WARN_NO				(12 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_TP_SPI_R_WARN_NO				(13 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_TP_SPI_W_WARN_NO				(14 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_TP_ESD_CHECK_WARN_NO			(15 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_TP_GHOST_ERROR_NO				(16 | ZLOG_COMB_ERR_FLAG)
+
+
+/* LCD */
+#define ZLOG_LCD_BIAS_I2C_W_ERROR_NO			(2 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_ESD_CHECK_ERROR_NO				(5 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_LCD_FRAME_UNDERFLOW_NO				(256 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_LCD_CREATE_FENCE_ERROR_NO			(257 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_CHANGE_FPS_ERROR_NO			(258 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_UNDERRUN_ERROR_NO				(259 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_PANEL_PREPARE_ERROR_NO			(260 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_DSI_POWERON_ERROR_NO			(261 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_DSI_CONFIG_ERROR_NO			(262 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_DSI_PREPARE_PANEL_FAILED_NO	(263 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_DSI_DISABLE_PANEL_FAILED_NO	(264 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_ESD_CHECK_ERROR_MODE_NO		(265 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_OLED_BL_INIT_FAILED_NO			(266 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_PANEL_PROBE_FAILED_NO			(267 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_DPU_WAIT_TIMEOUT_NO			(268 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_LCD_WAIT_DPU_TIMEOUT_NO			(269 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_LCD_SPRD_IOMMU_ERROR_NO			(270 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_LCD_DPU_NOT_INIT_NO				(271 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_DPU_FLIP_DISABLE_NO			(272 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_WB_BUF_ALLOC_ERR_NO			(273 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_LCD_DPU_LUTS_ALLOC_ERR_NO			(274 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_IMG_FORMAT_ERR_NO				(275 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_LAYER_PIXEL_BYTES_ERR_NO		(276 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_DPU_MODESET_ERR_NO				(277 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_LCD_ESD_CHECK_ERROR_CAN_NOT_RECOVERY_NO	(278 | ZLOG_COMB_ERR_FLAG)
+
+
+/* SENSOR */
+#define ZLOG_SENSOR_I2C_RW_ERROR_NO			(1 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_SPI_RW_ERROR_NO			(2 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_ESD_CHECK_TRI_NO		(3 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_FACTORY_CALI_NO			(4 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_SENSOR_STEP_COUNTER_DEC_NO		(5 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_SENSORHUB_NOT_UP		(6 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_SENSORHUB_RETRY_TIMES	(7 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_SENSOR_AUTO_BRIGHTNESS_NO		(100 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_SENSOR_REGISTRATION_EVENT		(101 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_SENSOR_STEP_COUNTER_EVENT		(102 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_SENSOR_STEP_COUNTER_DECREASE_EVENT	(103 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_BREATH_LED_NODE_NOT_EXIST	(200 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_BREATH_LED_NODE_RW_ERROR	(201 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_ACCL_ENABLE_FIFO_ERR	(262 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_ACCL_READ_REG_ERR		(263 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_PROX_ABNORMAL_LV1		(264 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_ALS_PS_VALIDATE_ERR        (265 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_PROX_ABNORMAL_LV2		(266 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_PROX_ABNORMAL_LV3		(267 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SENSOR_PROX_ABNORMAL_LV4		(268 | ZLOG_COMB_ERR_FLAG)
+
+/* fuel gauge */
+#define ZLOG_FG_I2C_R_ERROR_NO				(1 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_FG_I2C_W_ERROR_NO				(2 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_FG_ADJUST_TO_ZERO				(256 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_FG_ADJUST_TO_FULL				(257 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_FG_UUSOC_TO_ZERO				(258 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_FG_UUSOC_TO_FULL				(259 | ZLOG_COMB_ERR_FLAG)
+
+/*nfc*/
+#define ZLOG_NFC_I2C_WRITE_ERROR_NO			(1 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_NFC_I2C_READ_ERROR_NO			(2 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_NFC_CLK_ENABLE_ERROR_NO			(3 | ZLOG_COMB_ERR_FLAG)
+
+/* SMARTPA */
+#define ZLOG_SMARTPA_I2C_R_ERROR_NO			(1 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SMARTPA_I2C_W_ERROR_NO			(2 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SMARTPA_READ_CHIPID_NO			(3 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SMARTPA_CALI_ERROR_NO			(4 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SMARTPA_CALI_R_ERROR_NO 		(5 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SMARTPA_CALI_W_ERROR_NO 		(6 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SMARTPA_I2S_ERROR_NO 		(7 | ZLOG_COMB_ERR_FLAG)
+
+/* FP */
+#define ZLOG_FP_REQUEST_INT_GPIO_ERROR_NO	(256 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_FP_REQUEST_RST_GPIO_ERROR_NO	(257 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_FP_REQUEST_PWR_GPIO_ERROR_NO	(258 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_FP_REGULATOR_GET_SET_ERROR_NO	(259 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_FP_REGULATOR_ENABLE_ERROR_NO	(260 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_FP_REGULATOR_DISABLE_ERROR_NO	(261 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_FP_MODULE_OPEN_ERROR_NO		(262 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_FP_ENROLL_ERROR_NO 			(263 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_FP_REMOVE_TEMPLATE_ERROR_NO	(264 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_FP_NO_SPACE_ERROR_NO			(265 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_FP_HW_UNAVAILABLE_ERROR_NO		(266 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_FP_AUTH_SUCCESS			(267 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_FP_AUTH_FAIL			(268 | ZLOG_COMB_WARN_FLAG)
+
+/* SUB SYSTEM */
+#define ZLOG_SUBSYS_MODEM_CRASH_ERROR_NO      (256 | ZLOG_COMB_ERR_FLAG)
+
+/*AUDIO*/
+#define ZLOG_SND_CARD_PROBE_ERROR_NO			(1 | ZLOG_COMB_ERR_FLAG)
+
+
+/*HS_TYPEC*/
+#define ZLOG_HSTYPEC_PROBE_ERROR_NO				(1 | ZLOG_COMB_ERR_FLAG)
+
+
+/* camera qcom */
+/*i2c*/
+#define ZLOG_CAMERA_I2C_READ_ERR				(1 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CAMERA_I2C_WRITE_ERR				(2 | ZLOG_COMB_ERR_FLAG)
+
+/*actuator*/
+#define ZLOG_CAMERA_ACTUATOR_POWER_UP_FAIL           (256 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CAMERA_ACTUATOR_POWER_DOWN_FAIL         (257 | ZLOG_COMB_ERR_FLAG)
+
+/*sensor*/
+#define ZLOG_CAMERA_SENSOR_START_STREAM_FAIL         (258 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CAMERA_SENSOR_STOP_STREAM_FAIL          (259 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CAMERA_SENSOR_INIT_FAIL                 (260 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CAMERA_SENSOR_SET_RESOLUTION_FAIL       (261 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CAMERA_SENSOR_POWER_UP_FAIL             (262 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CAMERA_SENSOR_POWER_DOWN_FAIL           (263 | ZLOG_COMB_ERR_FLAG)
+
+/*eeprom*/
+#define ZLOG_CAMERA_EEPROM_POWER_UP_FAIL             (264 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CAMERA_EEPROM_POWER_DOWN_FAIL           (265 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_CAMERA_EEPROM_READ_FAIL                 (266 | ZLOG_COMB_ERR_FLAG)
+
+/*mipi*/
+#define ZLOG_CAMERA_PHY_CRC_ERROR                    (267 | ZLOG_COMB_ERR_FLAG)
+
+
+/* boot mode */
+#define ZLOG_BOOT_MODE_NORMAL_BOOT                      (280 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_MODE_META_BOOT                        (281 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_MODE_RECOVERY_BOOT                    (282 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_MODE_SW_REBOOT                        (283 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_MODE_FACTORY_BOOT                     (284 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_MODE_ADVMETA_BOOT                     (285 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_MODE_ATE_FACTORY_BOOT                 (286 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_MODE_ALARM_BOOT                       (287 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_MODE_KERNEL_POWER_OFF_CHARGING_BOOT   (288 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_MODE_LOW_POWER_OFF_CHARGING_BOOT      (289 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_MODE_SPECIAL                          (290 | ZLOG_COMB_ERR_FLAG)
+#define	ZLOG_BOOT_MODE_IQ                               (291 | ZLOG_COMB_ERR_FLAG)
+#define	ZLOG_BOOT_MODE_WDGREBOOT                        (292 | ZLOG_COMB_ERR_FLAG)
+#define	ZLOG_BOOT_MODE_ABNORMALREBOOT                   (293 | ZLOG_COMB_ERR_FLAG)
+#define	ZLOG_BOOT_MODE_PANIC                            (294 | ZLOG_COMB_ERR_FLAG)
+#define	ZLOG_BOOT_MODE_ENGTEST                          (295 | ZLOG_COMB_ERR_FLAG)
+#define	ZLOG_BOOT_MODE_SPRDISK                          (296 | ZLOG_COMB_ERR_FLAG)
+#define	ZLOG_BOOT_MODE_APKMMI_MODE                      (297 | ZLOG_COMB_ERR_FLAG)
+#define	ZLOG_BOOT_MODE_UPT_MODE                         (298 | ZLOG_COMB_ERR_FLAG)
+#define	ZLOG_BOOT_MODE_APKMMI_AUTO_MODE                 (299 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_MODE_FASTBOOT                         (379 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_MODE_DOWNLOAD_BOOT                    (380 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_MODE_UNKNOWN_BOOT                     (381 | ZLOG_COMB_ERR_FLAG)
+
+/* boot reason */
+#define ZLOG_BOOT_REASON_POWER_KEY             			(300 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_REASON_REBOOT                			(301 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_REASON_LONG_POWKEY           			(302 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_HWT                   			(303 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_KE                    			(304 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_HANG_DETECT           			(305 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_MRDUMP                			(306 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_LK_CRASH              			(307 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_HW_REBOOT             			(308 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_SPM_THERMAL_REBOOT    			(309 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_SPM_REBOOT            			(310 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_THERMAL_REBOOT        			(311 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_SECURITY_REBOOT       			(312 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_SSPM_REBOOT           			(313 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_PMIC_COLD_REBOOT      			(314 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_2SEC_REBOOT           			(315 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_USB                   			(316 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_REASON_POWER_EXC             			(317 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_RTC                   			(318 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_REASON_POWER_LOSS            			(319 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_WDT                   			(320 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_TOOL_BY_PASS_PWK      			(321 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_WDT_SW                			(322 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_WDT_HW                			(323 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_UNKNOWN_REBOOT        			(324 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_REBOOT_EXCEPTION      			(325 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_UNKNOWN               			(326 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_RECOVERY              			(327 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_SLEEP                 			(328 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_CALIBRATION           			(329 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_SPECIAL               			(330 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_IQMODE                			(331 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_SPRDISK               			(332 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_7S_RESET              			(333 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_BOOT_REASON_ABNORMAL              			(334 | ZLOG_COMB_ERR_FLAG)
+
+/* OTA */
+#define ZLOG_OTA_MERGING                            (20 | ZLOG_COMB_WARN_FLAG))
+#define ZLOG_OTA_MERGED                             (21 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_OTA_MERGE_NEEDS_REBOOT                 (22 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_OTA_MERGED_FAILED                      (23 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_OTA_ACTION_PROCESSOR                   (24 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_OTA_ACTIONS_COMPLETED                  (25 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_OTA_ACTIONS_START                      (26 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_OTA_SIGNATURE_MISMATCH                 (27 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_OTA_NO_SPACE                           (28 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_OTA_USER_CANCELED                      (29 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_OTA_FILESYSTEM_VERIFIER_ERROR          (30 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_OTA_DLOPERATION_HASH_MISMATCH          (31 | ZLOG_COMB_ERR_FLAG)
+
+/* power off reason */
+
+#define ZLOG_BOOT_PWROFF_REASON_POWER_KEY            		(400 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_OTP                  		(401 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_WRITE                		(402 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_OTP_WRITE            		(403 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_7S                   		(404 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_7S_OTP               		(405 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_7S_WRITE             		(406 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_7S_WRITE_OTP         		(407 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_OVLO                 		(408 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_OVLO_OTP             		(409 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_OVLO_WRITE           		(410 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_OVLO_WRITE_OTP       		(411 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_OVLO_7S              		(412 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_OVLO_7S_OTP          		(413 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_OVLO_7S_WRITE        		(414 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_OVLO_7S_WRITE_OTP    		(415 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_UVLO                 		(416 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_UVLo_OTP             		(417 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_UVLO_WRITE           		(418 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_UVLO_WRITE_OTP       		(419 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_UVLO_7S              		(420 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_UVLO_7S_OTP          		(421 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_UVLO_7S_WRITE        		(422 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_UVLO_7S_WRITE_OTP    		(423 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_BOOT_PWROFF_REASON_UNKNOWN              		(424 | ZLOG_COMB_WARN_FLAG)
+
+
+/* SPI */
+#define ZLOG_SPI_DEVICE_SYNC_ERR						(1 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SPI_DEVICE_PM_RUNTIME_ERR				(256 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SPI_DEVICE_PRE_TRANSFER_ERR				(257 | ZLOG_COMB_ERR_FLAG)
+
+/* F2FS */
+#define ZLOG_F2FS_META_DATA_ERR					(1 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_F2FS_CP_INVALID_ERR				(256 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_F2FS_NEED_FSCK_FLAG				(257 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_F2FS_FSCK_TOO_LONG_ERR				(258 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_F2FS_MOUNT_TOO_LONG_ERR				(259 | ZLOG_COMB_ERR_FLAG)
+
+/* UFS */
+#define ZLOG_UFS_INIT_SUCC					(256 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_UFS_CMD_TIMEOUT_ERR				(257 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_UFS_H8_EXIT_ERR					(258 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_UFS_QUERY_ATTRIBUTE_ERR				(259 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_UFS_SEND_QUERY_ERR					(260 | ZLOG_COMB_ERR_FLAG)
+
+#define ZLOG_UFS_HCD_ABORT_ERR					(261 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_UFS_SDEVREV_SUCC					(262 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_UFS_EMMC_RSP_ERR					(263 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_UFS_EMMC_INIT_SUCC					(264 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_UFS_EMMC_FWREV_REPORT				(265 | ZLOG_COMB_WARN_FLAG)
+
+/* vibrator*/
+#define ZLOG_VIB_I2C_R_ERR				(1 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_VIB_I2C_W_ERR				(2 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_VIB_NODE_NOT_EXIST_ERR			(3 | ZLOG_COMB_ERR_FLAG)
+
+/* End of Error_No define */
+
+/*USB*/
+#define ZLOG_DWC3_VBUS_INVALID_WAR					(501 | ZLOG_COMB_WARN_FLAG)
+#define ZLOG_TYPEC_UNCERTAIN_CONNECT_STATE				(502 | ZLOG_COMB_ERR_FLAG)
+
+/* SafeChip */
+#define ZLOG_SC_REQUEST_RST_GPIO_ERROR_NO				(510 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SC_REQUEST_PWR_GPIO_ERROR_NO				(511 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SC_REQUEST_STAT_GPIO_ERROR_NO				(512 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SC_REQUEST_WAKE_GPIO_ERROR_NO				(513 | ZLOG_COMB_ERR_FLAG)
+#define ZLOG_SC_MEMORY_KMALLOC_ERROR_NO					(514 | ZLOG_COMB_ERR_FLAG)
+
+typedef struct {
+    int32_t tag;
+    int32_t length;
+    int32_t value;
+    int32_t reserved;
+} zlog_cmd_t;
+
+struct zlog_client_ops {
+	int (*poll_state)(void);
+	int (*dump_func)(void *data, int type);
+};
+
+struct zlog_mod_info {
+	int module_no;
+	const char *name;
+	const char *device_name;
+	const char *ic_name;
+	const char *module_name;
+	struct zlog_client_ops *fops;
+};
+
+struct zlog_client {
+	int client_id;
+	char client_name[ZLOG_CLIENT_NAME_LEN];
+	char device_name[ZLOG_MAX_DEVICE_NAME_LEN];
+	char ic_name[ZLOG_MAX_IC_NAME_LEN];
+	char module_name[ZLOG_MAX_MODULE_NAME_LEN];
+	struct zlog_client_ops *cops;
+	struct mutex client_lock;
+	int module_no;
+	int error_no;
+	unsigned long buff_flag;
+	size_t read_size;
+	size_t used_size;
+	size_t buff_size;
+	char *dump_buff;
+	void *private_data;
+	char initialized;
+};
+
+struct zlog_device {
+	struct zlog_client client_list[MAX_CLIENT_CNT];
+	struct workqueue_struct *handle_workqueue;
+	struct delayed_work handle_work;
+	struct miscdevice misc;
+	atomic_t use_cnt;
+	bool init_finished;
+};
+
+struct zlog_event {
+	char *event_buff;
+	size_t event_buff_len;
+	size_t event_used_size;
+};
+
+#if defined(CONFIG_VENDOR_ZTE_LOG_EXCEPTION) || defined(CONFIG_VENDOR_ZTE_DEV_MONITOR_SYSTEM)
+int zlog_client_record(struct zlog_client *client, const char *fmt, ...);
+void zlog_client_notify(struct zlog_client *client, int error_no);
+void zlog_reset_client(struct zlog_client *client);
+struct zlog_client *zlog_register_client(struct zlog_mod_info *mod_info);
+void zlog_unregister_client(struct zlog_client *client);
+#else
+static inline int zlog_client_record(struct zlog_client *client, const char *fmt, ...)
+{
+	return -ENOSYS;
+}
+
+static inline void zlog_client_notify(struct zlog_client *client, int error_no)
+{
+	return;
+}
+
+static inline void zlog_reset_client(struct zlog_client *client)
+{
+	return;
+}
+
+static inline struct zlog_client *zlog_register_client(struct zlog_mod_info *mod_info)
+{
+	return NULL;
+}
+
+static inline void zlog_unregister_client(struct zlog_client *client)
+{
+	return;
+}
+#endif
+
+
+#endif

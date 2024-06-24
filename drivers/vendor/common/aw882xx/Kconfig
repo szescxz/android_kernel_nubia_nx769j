@@ -1,0 +1,5 @@
+config SND_SMARTPA_AW882XX
+  bool "SoC Audio for awinic aw882xxseries"
+
+config SND_SOC_AW882XX_TDM
+  bool "SoC Audio for awinic aw882xxseries tdm"

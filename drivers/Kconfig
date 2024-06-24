@@ -239,4 +239,22 @@ source "drivers/peci/Kconfig"
 
 source "drivers/hte/Kconfig"
 
+source "drivers/vendor/common/Kconfig"
+
+source "drivers/vendor/soc/qcom/Kconfig"
+
+source "drivers/nubia/sensors_sensitivity/Kconfig"
+
+config ZTE_BOOT_CODE
+	bool "zte boot code"
+	default n
+	help
+	  control zte boot code
+
+config NUBIA_DP
+	bool "nubia dp"
+	default n
+	help
+	  nubia dp
+
 endmenu

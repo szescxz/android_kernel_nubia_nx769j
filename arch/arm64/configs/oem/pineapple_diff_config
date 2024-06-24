@@ -1,0 +1,32 @@
+##config for sm8650 platform
+#ADD:CONFIG_*
+
+CONFIG_ZTE_BOOT_CODE=y
+#--------------------------
+# vendor soc driver
+#--------------------------
+#CONFIG_VENDOR_SOC_QCOM_SRC=y
+CONFIG_VENDOR_IMEM_INFO=m
+CONFIG_VENDOR_KERNEL_MODULE_PARAM=m
+CONFIG_VENDOR_PMLOG=m
+CONFIG_VENDOR_PMLOG_PLATFORM=8550
+#--------------------------
+# vendor common driver
+#--------------------------
+#CONFIG_VENDOR_COMMON_COMPILE=y
+
+#charger
+CONFIG_POWER_VENDOR_COMMON=y
+CONFIG_VENDOR_ZTE_MISC=m
+CONFIG_VENDOR_CHARGER_POLICY_SERVICE=m
+CONFIG_ZTE_POWER_SUPPLY=m
+
+#stats info for iotop
+CONFIG_VENDOR_STATS_INFO=m
+
+# add for nubia sensor_sensitivity
+CONFIG_NUBIA_SENSORS_SENS_EN=m
+
+#stability debug
+CONFIG_QCOM_RTB=m
+CONFIG_QCOM_RTB_SEPARATE_CPUS=y

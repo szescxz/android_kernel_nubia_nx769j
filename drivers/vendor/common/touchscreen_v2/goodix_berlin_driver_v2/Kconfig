@@ -1,0 +1,29 @@
+#
+# Goodix touchscreen driver configuration
+#
+menuconfig TOUCHSCREEN_GOODIX_BRL_V2
+	bool "Goodix berlin touchscreen"
+	default n
+	help
+	  Say Y here if you have a Goodix berlin series touch controller
+	  to your system.
+
+	  If build module, say M.
+	  If unsure, say N.
+
+if TOUCHSCREEN_GOODIX_BRL_V2
+
+config TOUCHSCREEN_GOODIX_BRL_I2C
+	bool "support I2C bus connection"
+	depends on I2C
+	default n
+	help
+	  Say Y here if the touchscreen is connected via I2C bus.
+
+config TOUCHSCREEN_GOODIX_BRL_SPI
+	bool "support SPI bus connection"
+	default n
+	help
+		Say Y here if the touchscreen is connected via SPI bus.
+
+endif

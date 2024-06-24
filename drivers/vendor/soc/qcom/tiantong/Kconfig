@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# tiantong devices
+#
+
+config ZTE_TIANTONG
+	tristate "zte driver for tiantong control"
+	help
+	  driver for the powerup/poweroff/reset of tiantong chip
+

@@ -1,0 +1,12 @@
+config VENDOR_SOC_QCOM_SRC
+	bool "drivers/vendor/soc/qcom drivers compile control"
+	default n
+	help
+		This enables drivers/vendor/soc/qcom drivers to be compiled.
+
+source "drivers/vendor/soc/qcom/imem_info/Kconfig"
+source "drivers/vendor/soc/qcom/kmparam/Kconfig"
+source "drivers/vendor/soc/qcom/pmlog/Kconfig"
+source "drivers/vendor/soc/qcom/stats_info/Kconfig"
+source "drivers/vendor/soc/qcom/rchip/Kconfig"
+source "drivers/vendor/soc/qcom/tiantong/Kconfig"

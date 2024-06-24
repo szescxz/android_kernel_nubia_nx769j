@@ -1,0 +1,67 @@
+
+source "drivers/vendor/common/touchscreen_v2/focaltech_touch_3681/Kconfig"
+source "drivers/vendor/common/touchscreen_v2/goodix_berlin_driver_v2/Kconfig"
+source "drivers/vendor/common/touchscreen_v2/goodix_berlin_driver_9916r/Kconfig"
+source "drivers/vendor/common/touchscreen_v2/goodix_berlin_driver_9966/Kconfig"
+
+config TOUCHSCREEN_BOARD_NAME
+	string "config board firmware folder"
+
+config TOUCHSCREEN_DRM_PANEL_NOTIFIER
+	bool "add qcom drm panel support"
+	default n
+	help
+	  Say Y here to enable debug tools.
+
+	  If unsure, say N.
+
+config TOUCHSCREEN_UFP_MAC
+	bool "tp under fingerprint status machine"
+	default n
+	help
+	  Say Y here if you want to have a under fingerprint status machine
+	  If unsure, say N.
+
+config TOUCHSCREEN_POINT_REPORT_CHECK
+	bool "all point clean when tp irq timeout"
+	default n
+	help
+	  Say Y here to enable .
+	  If unsure, say N.
+config TOUCHSCREEN_POINT_SIMULAT_UF
+ 	bool "tp under fingerprint status machine"
+ 	default n
+ 	help
+ 	  Say Y here if you want to simulate finger down
+ 	  If unsure, say N.
+
+config TOUCHSCREEN_BOARD_NAME
+	string "config board firmware folder"
+
+config TOUCHSCREEN_9916R_REPORT_RATE
+	bool "tp report rate when use 9916r"
+	default n
+	help
+	  Say Y here if you want to use PQ82A11 report rate
+	  If unsure, say N.
+
+config TOUCHSCREEN_IOVDD_GPIO_POWER
+	bool "tp iovdd power on use gpio"
+	default n
+	help
+	  Say Y here if you want to use iovdd gpio power on
+	  If unsure, say N.
+
+config TOUCHSCREEN_FOLD_PROJECT
+	bool "tp use fold project"
+	default n
+	help
+	  Say Y here if you want to use FOLD
+	  If unsure, say N.
+
+config TOUCHSCREEN_PQ82A02_ZTE_SR
+	bool "tp make ZTE_GOODIX_SR is 1 when in recovery"
+	default n
+	help
+	  Say Y here if you want to use recovery
+	  If unsure, say N.

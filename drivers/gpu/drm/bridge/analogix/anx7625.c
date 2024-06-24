@@ -1436,6 +1436,9 @@ static void anx7625_start_dp_work(struct anx7625_data *ctx)
 		return;
 
 	DRM_DEV_DEBUG_DRIVER(dev, "Secure OCM version=%02x\n", ret);
+
+	ctx->display_timing_valid = 1;
+	anx7625_dp_start(ctx);
 }
 
 static int anx7625_read_hpd_status_p0(struct anx7625_data *ctx)
@@ -1464,7 +1467,7 @@ static int _anx7625_hpd_polling(struct anx7625_data *ctx,
 	struct device *dev = &ctx->client->dev;
 
 	/* Interrupt mode, no need poll HPD status, just return */
-	if (ctx->pdata.intp_irq)
+	if ((ctx->pdata.intp_irq) && !(ctx->out_of_hibr))
 		return 0;
 
 	ret = readx_poll_timeout(anx7625_read_hpd_status_p0,
@@ -2041,7 +2044,7 @@ static int anx7625_attach_dsi(struct anx7625_data *ctx)
 	struct mipi_dsi_host *host;
 	const struct mipi_dsi_device_info info = {
 		.type = "anx7625",
-		.channel = 0,
+		.channel = ctx->channel,
 		.node = NULL,
 	};
 	int ret;
@@ -2180,14 +2183,25 @@ static int anx7625_bridge_attach(struct drm_bridge *bridge,
 		return err;
 	}
 
+	if (!ctx->pdata.is_dpi) {
+		err  = anx7625_attach_dsi(ctx);
+		if (err) {
+			DRM_DEV_ERROR(dev, "Fail to attach to dsi : %d\n", err);
+			return err;
+		}
+	}
+
 	if (ctx->pdata.panel_bridge) {
 		err = drm_bridge_attach(bridge->encoder,
 					ctx->pdata.panel_bridge,
 					&ctx->bridge, flags);
-		if (err)
+		if (err) {
+			DRM_DEV_ERROR(dev, "Fail to attach to bridge : %d\n", err);
 			return err;
+		}
 	}
 
+	device_link_add(bridge->dev->dev, dev, DL_FLAG_STATELESS);
 	ctx->bridge_attached = 1;
 
 	return 0;
@@ -2197,6 +2211,7 @@ static void anx7625_bridge_detach(struct drm_bridge *bridge)
 {
 	struct anx7625_data *ctx = bridge_to_anx7625(bridge);
 
+	ctx->bridge_attached = 0;
 	drm_dp_aux_unregister(&ctx->aux);
 }
 
@@ -2420,6 +2435,11 @@ static void anx7625_bridge_atomic_enable(struct drm_bridge *bridge,
 	if (!connector)
 		return;
 
+	if (ctx->out_of_hibr) {
+		ctx->out_of_hibr = false;
+		pr_info("anx7625 hibernation: Display up\n");
+	}
+
 	ctx->connector = connector;
 
 	pm_runtime_get_sync(dev);
@@ -2544,14 +2564,46 @@ static int __maybe_unused anx7625_runtime_pm_resume(struct device *dev)
 
 	anx7625_power_on_init(ctx);
 
+	_anx7625_hpd_polling(ctx, 5000 * 100);
+
 	mutex_unlock(&ctx->lock);
 
 	return 0;
 }
 
+static int __maybe_unused anx7625_resume(struct device *dev)
+{
+	struct anx7625_data *ctx = dev_get_drvdata(dev);
+
+	if (!ctx->pdata.intp_irq)
+		return 0;
+
+	if (!pm_runtime_enabled(dev) || !pm_runtime_suspended(dev)) {
+		enable_irq(ctx->pdata.intp_irq);
+		ctx->out_of_hibr = true;
+		anx7625_runtime_pm_resume(dev);
+	}
+
+	return 0;
+}
+
+static int __maybe_unused anx7625_suspend(struct device *dev)
+{
+	struct anx7625_data *ctx = dev_get_drvdata(dev);
+
+	if (!ctx->pdata.intp_irq)
+		return 0;
+
+	if (!pm_runtime_enabled(dev) || !pm_runtime_suspended(dev)) {
+		anx7625_runtime_pm_suspend(dev);
+		disable_irq(ctx->pdata.intp_irq);
+	}
+
+	return 0;
+}
+
 static const struct dev_pm_ops anx7625_pm_ops = {
-	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-				pm_runtime_force_resume)
+	SET_SYSTEM_SLEEP_PM_OPS(anx7625_suspend, anx7625_resume)
 	SET_RUNTIME_PM_OPS(anx7625_runtime_pm_suspend,
 			   anx7625_runtime_pm_resume, NULL)
 };
@@ -2569,6 +2621,7 @@ static int anx7625_i2c_probe(struct i2c_client *client,
 	struct anx7625_platform_data *pdata;
 	int ret = 0;
 	struct device *dev = &client->dev;
+	struct device_node *parent_node = of_get_parent(dev->of_node);
 
 	if (!i2c_check_functionality(client->adapter,
 				     I2C_FUNC_SMBUS_I2C_BLOCK)) {
@@ -2597,6 +2650,8 @@ static int anx7625_i2c_probe(struct i2c_client *client,
 		return ret;
 	}
 	anx7625_init_gpio(platform);
+
+	of_property_read_u32_index(parent_node, "reg", 0, &platform->channel);
 
 	mutex_init(&platform->lock);
 	mutex_init(&platform->hdcp_wq_lock);
@@ -2683,27 +2738,12 @@ static int anx7625_i2c_probe(struct i2c_client *client,
 
 	drm_bridge_add(&platform->bridge);
 
-	if (!platform->pdata.is_dpi) {
-		ret = anx7625_attach_dsi(platform);
-		if (ret) {
-			DRM_DEV_ERROR(dev, "Fail to attach to dsi : %d\n", ret);
-			goto unregister_bridge;
-		}
-	}
-
 	if (platform->pdata.audio_en)
 		anx7625_register_audio(dev, platform);
 
 	DRM_DEV_DEBUG_DRIVER(dev, "probe done\n");
 
 	return 0;
-
-unregister_bridge:
-	drm_bridge_remove(&platform->bridge);
-
-	if (!platform->pdata.low_power_mode)
-		pm_runtime_put_sync_suspend(&client->dev);
-
 free_wq:
 	if (platform->workqueue)
 		destroy_workqueue(platform->workqueue);

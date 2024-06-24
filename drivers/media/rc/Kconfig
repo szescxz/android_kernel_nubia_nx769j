@@ -478,3 +478,11 @@ source "drivers/media/rc/img-ir/Kconfig"
 endif #RC_DEVICES
 
 endif #RC_CORE
+
+config ZTE_IR
+	tristate "IR SPI driver for ZTE"
+	depends on SPI
+	help
+	   This enables the IR driver for android devices.
+	   To compile this driver as a module, choose M here: the module will be
+	   called zte_ir.

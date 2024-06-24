@@ -1,0 +1,8 @@
+
+config VENDOR_ZTE_LOG_EXCEPTION
+	tristate "ZTE LOG EXCEPTION"
+	default n
+	help
+	  Say Y here, if supported zte log exception
+
+

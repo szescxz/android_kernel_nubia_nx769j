@@ -1099,6 +1099,18 @@ config MMC_OWL
 config MMC_SDHCI_EXTERNAL_DMA
 	bool
 
+config MMC_CRYPTO_QTI
+	tristate "Vendor specific CQHCI Crypto Engine Support"
+	depends on MMC_CRYPTO
+	help
+	  Enable Vendor Crypto Engine Support in CQHCI
+	  Enabling this allows kernel to use CQHCI crypto operations defined
+	  and implemented by QTI.
+
+	  If you have a controller with this interface, say Y or M here.
+
+	  If unsure, say N
+
 config MMC_LITEX
 	tristate "LiteX MMC Host Controller support"
 	depends on ((PPC_MICROWATT || LITEX) && OF && HAVE_CLK) || COMPILE_TEST
@@ -1111,3 +1123,14 @@ config MMC_LITEX
 	  module will be called litex_mmc.
 
 	  If unsure, say N.
+
+config SDHCI_MSM_DBG
+	bool "Qualcomm Technologies, Inc. SDHCI_MSM_DBG Driver"
+	depends on MMC_SDHCI_MSM
+	help
+	  This enables the IPC tracing events for sdhci_msm driver.
+
+	  Tracing sdhci_msm events helps to trace significant events
+	  used for debugging purpose.
+
+	  If unsure, say N here.

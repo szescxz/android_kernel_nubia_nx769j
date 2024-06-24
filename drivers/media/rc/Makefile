@@ -2,6 +2,12 @@
 
 obj-y += keymaps/
 
+obj-$(CONFIG_ZTE_IR) += zte_ir.o
+ifeq ($(CONFIG_ZTE_IR),m)
+$(info "ZTE IR IS BUILT AS DLKM")
+BOARD_VENDOR_KERNEL_MODULES +=  $(KERNEL_MODULES_OUT)/zte_ir.ko
+endif
+
 rc-core-y := rc-main.o rc-ir-raw.o
 rc-core-$(CONFIG_LIRC) += lirc_dev.o
 rc-core-$(CONFIG_MEDIA_CEC_RC) += keymaps/rc-cec.o

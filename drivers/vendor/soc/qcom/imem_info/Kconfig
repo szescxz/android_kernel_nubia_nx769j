@@ -1,0 +1,12 @@
+
+config VENDOR_IMEM_INFO
+	tristate "ZTE IMEM INFO"
+	default n
+	help
+	  Say 'y' here to include support for zte imem info.
+
+config NUBIA_BOARD_ID
+	bool "nubia board id"
+	default n
+	help
+		This enabled for nubia hw board id

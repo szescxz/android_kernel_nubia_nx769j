@@ -1,0 +1,9 @@
+config CUSTOM_KERNEL_HALL_3AXIS_SENSOR
+	bool "ZTE_HALL_3AXIS SENSOR"
+		depends on I2C
+		default n
+		help
+		  Say Y here if you have zte hall-3axis sensor.
+		  If unsure, say N.
+
+source "drivers/vendor/common/sensor/hall-3axis/Kconfig"

@@ -1,0 +1,14 @@
+#
+# pmlog driver
+#
+config VENDOR_PMLOG
+  tristate "PMLOG Driver"
+  default n
+  help
+    This program is used for recode the ap and modem's sleep and wake time
+
+config VENDOR_PMLOG_PLATFORM
+    int "PMLog Platform"
+    default 98
+    help
+      control each platform's subsystems name and number

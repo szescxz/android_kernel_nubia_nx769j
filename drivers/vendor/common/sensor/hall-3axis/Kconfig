@@ -1,0 +1,7 @@
+config HALL_3AXIS_SENSOR_AK09973
+	tristate "HALL_3AXIS_SENSOR_AK09973"
+		depends on I2C
+		default n
+		help
+		  Say Y here if you have ak09973 hall 3axis sensor.
+		  If unsure, say N.

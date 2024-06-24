@@ -1,0 +1,10 @@
+
+config VENDOR_ZTE_LOG_E_TEST
+	tristate "ZTE LOG EXCEPTION TEST"
+	depends on VENDOR_ZTE_LOG_EXCEPTION
+	depends on VENDOR_ZTE_LOG_COMMON
+	default n
+	help
+	  Say Y here, if supported zte log exception
+
+

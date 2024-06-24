@@ -1,0 +1,8 @@
+config POWER_VENDOR_COMMON
+	tristate "zte power common"
+	help
+	  Say Y here, if supported zte power common
+
+source "drivers/vendor/common/power/charger_policy/Kconfig"
+source "drivers/vendor/common/power/misc/Kconfig"
+source "drivers/vendor/common/power/zte_supply/Kconfig"
