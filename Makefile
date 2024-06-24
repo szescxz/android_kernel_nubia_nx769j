@@ -1127,6 +1127,9 @@ include $(addprefix $(srctree)/, $(include-y))
 # scripts/Makefile.gcc-plugins is intentionally included last.
 # Do not add $(call cc-option,...) below this line. When you build the kernel
 # from the clean source tree, the GCC plugins do not exist at this point.
+ifeq ($(ZTE_FEATURE_PV_AR),true)
+KCFLAGS += -DZTE_FEATURE_PV_AR=1
+endif
 
 # Add user supplied CPPFLAGS, AFLAGS, CFLAGS and RUSTFLAGS as the last assignments
 KBUILD_CPPFLAGS += $(KCPPFLAGS)
